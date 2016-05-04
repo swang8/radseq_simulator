@@ -15,13 +15,15 @@ class Digest:
 
 
     def runDigest(self):
-        self.fragments = {}
+        ##self.fragments = {}
         for record in SeqIO.parse(self.fastaFile, "fasta"):
             if record.id not in self.fragments:
                 self.fragments[record.id] = {}
             for enz in range(len(self.enzymes)):
-                if self.enzymes[enz] not in self.fragments[record.id]:
-                    self.fragments[record.id][self.enzymes[enz]] = []
+                if self.enzymes[enz] in self.fragments[record.id]:
+                    continue
+
+                self.fragments[record.id][self.enzymes[enz]] = []
                 coords = getattr(Restriction, self.enzymes[enz]).search(record.seq)
                 for site in range(len(coords)):
                     print  "%s    %d    %s" % (record.id, coords[site], self.enzymes[enz])
