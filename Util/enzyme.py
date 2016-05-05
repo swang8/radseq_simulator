@@ -12,11 +12,12 @@ class enzymeDict:
     def getProperty(self, id):
         return self.re_dict[id]
 
-
+    def checkEnz(self, enz): ## check if the enzyme is in the dictionary.
+        return enz in self.re_dict
 
 if __name__ == '__main__':
     ezd = enzymeDict()
-    for i in ezd.ids():
+    for i in enzymeDict().ids():
         print i
         print ezd.getProperty(i)
 
