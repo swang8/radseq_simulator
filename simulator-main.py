@@ -22,7 +22,7 @@ if args.type not in ('s', 'S', 'p', 'P'):
     print 'Not recognizing type: ' + args.type
     print 'Will generate single end reads!'
 
-(ref_fasta, depth, read_len, read_type, enz_first, enz_second, output_fasta) = \
+(ref_fasta, depth, read_len, read_type, enz_first, enz_second, output_prefix) = \
     (args.ref, args.depth, args.len, args.type, args.e1, args.e2, args.output)
 
 read_len += 10
@@ -62,9 +62,9 @@ for ctg in fragments:
 
 ## generate fasta file
 
-out_fh1 = open (output_fasta + "_R1.fastq", 'w')
+out_fh1 = open (output_prefix + "_R1.fastq", 'w')
 out_fh2 = ''
-if read_type in ['p', 'P']: out_fh2 = open (output_fasta + "_R2.fastq", 'w')
+if read_type in ['p', 'P']: out_fh2 = open (output_prefix + "_R2.fastq", 'w')
 
 enz_leftover =get_re_leftover([enz_first, enz_second])
 
