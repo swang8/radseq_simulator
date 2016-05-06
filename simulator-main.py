@@ -78,27 +78,71 @@ for seq_record in SeqIO.parse(ref_fasta, "fasta"):
             frag = fragments_ordered[seq_record.id][frag_index]
             (pos, enz) = frag
 
-            if type in ['s', 'S']: ## single end
+            # generate reads
+            if type in ['s', 'S']:
+                ## single end
                 if enz == enz_first:
                     leftover_seq = enz_leftover[enz]
                     # forward
                     forward_read = leftover_seq + mut_seq[pos: read_len + pos - len(leftover_seq)]
-                    out_fh1.write(">" + seq_record.id + ':' + pos + "\n")
-                    out_fh1.write(forward_read + '\n')
+                    read_qual = Util.simulate.generate_phred_scores(len(forward_read))
+                    out_fh1.write("@" + seq_record.id + ':' + pos + " 1\n")
+                    out_fh1.write(forward_read + '\n+\n' +read_qual + '\n')
                     # backward
                     back_pos = pos - len(Util.enzyme.enzymeDict().getProperty(enz)['site'])
                     back_start = back_pos - read_len
                     if back_start < 0:
                         back_start = 0
                     backward_read = leftover_seq + Seq(mut_seq[back_start:back_pos]).reverse_complment()
-                    out_fh1.write('>' + seq_record.id + ':' + back_pos + '\n' + backward_read + '\n')
-            else: ## pair end
-                
+                    read_qual = Util.simulate.generate_phred_scores(len(backward_read))
+                    out_fh1.write('@' + seq_record.id + ':' + back_pos + ' 1\n' + backward_read + '\n+\n', read_qual + '\n')
 
+            if type in ['p', 'P']:
+                ## pair end
+                if enz == enz_first:
+                    # plus strand
+                    frag_next = frag_index + 1
+                    (next_pos, next_enz) = ()
+                    if frag_next < len(fragments_ordered[seq_record.id]):
+                        (next_pos, next_enz) = fragments_ordered[seq_record.id][frag_next]
+                    else:
+                        next_pos = len(mut_seq) - 1
+                    if next_enz == enz_second:
+                        leftover_seq = enz_leftover[enz]
+                        # forward
+                        forward_read = leftover_seq + mut_seq[pos: read_len + pos - len(leftover_seq)]
+                        read_qual = Util.simulate.generate_phred_scores(len(forward_read))
+                        out_fh1.write("@" + seq_record.id + ':' + pos + " 1\n")
+                        out_fh1.write(forward_read + '\n+\n' + read_qual + '\n')
+                        # second read
+                        sec_read = Util.seq.reverse_complement(mut_seq[next_pos - read_len: next_pos])
+                        sec_read_qual = Util.simulate.generate_phred_scores(len(sec_read))
+                        out_fh2.write("@" + seq_record.id + ':' + pos + " 2\n")
+                        out_fh2.write(sec_read + '\n+\n' + sec_read_qual + '\n')
 
+                    # minus strand
+                    frag_prev = frag_index - 1
+                    if frag_prev >= 0:
+                        (prev_pos, prev_enz) = fragments_ordered[seq_record.id][frag_prev]
+                    else:
+                        prev_pos = 0
+                    if prev_enz == enz_second:
+                        # backward
+                        back_pos = pos - len(Util.enzyme.enzymeDict().getProperty(enz)['site'])
+                        back_start = back_pos - read_len
+                        if back_start < 0: back_start = 0
+                        backward_read = leftover_seq + Seq(mut_seq[back_start:back_pos]).reverse_complment()
+                        read_qual = Util.simulate.generate_phred_scores(len(backward_read))
+                        out_fh1.write('@' + seq_record.id + ':' + back_pos + ' 1\n' + backward_read + '\n+\n',
+                                      read_qual + '\n')
+                        # second read
+                        sec_read = mut_seq[prev_pos: prev_pos + read_len]
+                        sec_read_qual = Util.simulate.generate_phred_scores(len(sec_read))
+                        out_fh2.write("@" + seq_record.id + ':' + pos + " 2\n")
+                        out_fh2.write(sec_read + '\n+\n' + sec_read_qual + '\n')
 
 out_fh1.close()
-out_fh2.close()
+if out_fh2: out_fh2.close()
 
 ## helpers
 def get_re_leftover (enzs):
