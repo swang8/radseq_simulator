@@ -9,26 +9,37 @@ def simulate_error(seq, ERR_RATE = 0.02):
     DNA = ['A', 'T', 'G', 'C']
     err_seq = []
     for i in range(len(seq)):
-        if  random.random() < ERR_RATE:
-            subDNA = DNA[0: DNA.index(seq[i])] + DNA[DNA.index(seq[i])+1:]
-            err_seq[i] = subDNA[random.randint(0, 3)]
+        if  seq[i] in DNA and random.random() < ERR_RATE:
+            ##print 'index:', DNA.index(seq[i])
+            position = DNA.index(seq[i])
+            subDNA = DNA[0 : position] + DNA[position+1 : ]
+            #print subDNA
+            err_seq.append(subDNA[random.randint(0, 2)])
+        else:
+            err_seq.append(seq[i])
     return ''.join(err_seq)
 
 
-def mutate_genome (seq, MUT_RATE = 0.001, INDEL_FRAC = 0.15, INDEL_EXTEND = 0.3, MAX_N_RATIO = 0.05):
+def mutate_genome (id, seq, out_prefix, MUT_RATE = 0.001, INDEL_FRAC = 0.15, INDEL_EXTEND = 0.3, MAX_N_RATIO = 0.05):
     mut_seq = []
     mut_pos = []
+    var_file = open(out_prefix + "_var.txt", 'w')
     index = 0
     while index < len(seq):
-        mut = mutate(seq[index])
-        if mut == seq[index]:
-            mut_seq.append(mut)
+        nuc = seq[index].upper()
+        mut = mutate(nuc)
+        #print 'mut:', mut
+        if mut == nuc:
+            mut_seq.append(nuc)
         else:
+            var_file.write(id + '\t' + str(index) + '\t' + nuc + '\t' + mut + '\n')
             mut_pos.append([index, mut])
-            index += len(mut) - 1
-            if not '-' in mut:
-                mut_seq.append[mut]
+            if '-' in mut:
+                index += len(mut) - 1
+            else:
+                mut_seq.append(mut)
         index += 1
+    var_file.close()
     return [''.join(mut_seq), mut_pos]
 
 
@@ -102,9 +113,9 @@ if __name__ == '__main__':
     print seq
     K = 0
     while (K < 1000):
-        seq_simu = simulate(seq, len(seq))
+        seq_simu = mutate_genome(seq, len(seq))
         K += 1
-        if len(seq_simu[2]) == 0:
+        if len(seq_simu[1]) == 0:
             continue
         print seq
         for i in seq_simu:

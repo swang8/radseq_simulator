@@ -6,7 +6,7 @@ def reverse(seq):
         rev.append(seq[l])
     return ''.join(rev)
 
-def reverse_compliment(seq):
+def reverse_complement(seq):
     comp = {'A': "T", 'T':'A', 'G':'C', 'C':'G'}
     revc = []
     l = len(seq)
@@ -14,8 +14,8 @@ def reverse_compliment(seq):
         l = l -1
         s = seq[l]
         if s in comp:
-            rev.append(comp[s])
+            revc.append(comp[s])
         else:
-            rev.append('N')
+            revc.append('N')
     return ''.join(revc)
 
