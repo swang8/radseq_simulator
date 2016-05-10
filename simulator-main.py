@@ -10,6 +10,7 @@ from Bio.Seq import Seq
 from Bio import SeqIO
 import numpy as np
 
+
 ## parse command line parameters
 parser = argparse.ArgumentParser(description='A read simulator for RADseq, introducing variations and sequencing errors.')
 parser.add_argument('-ref', help='reference file in fasta format', type=str)
@@ -174,6 +175,7 @@ for seq_record in SeqIO.parse(ref_fasta, "fasta"):
                             (prev_pos, prev_enz) = fragments_ordered[seq_record.id][frag_prev]
                         else:
                             prev_pos = 0
+                            prev_enz = ''
                         if prev_enz == enz_second:
                             # backward
                             back_pos = pos - len(Util.enzyme.enzymeDict().getProperty(enz)['site'])
